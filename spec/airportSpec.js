@@ -1,53 +1,86 @@
-describe("Airport class", function() {
+describe("Airport class", () => {
 
+  var airport;
+  var weather;
+  var result;
 
+  var landedPlane = {
+    takeOff: () => {},
+    isFlying: () => {return false},
+    land: () => {}
+  }
 
-        describe("#orderTakeOff", function() {
+  var flyingPlane = {
+    isFlying: () => { return true; },
+    land: () => {}
+  };
 
-          let airport = new Airport();
+  beforeEach(() => {
+    airport = new Airport();
+  });
 
-          var landedPlane = {
-              takeOff: function() {},
-              isFlying: function() {
-                  return false;
-              }
-          };
+  describe("#orderTakeOff", () => {
 
-            it("makes a plane take off", function() {
-
-                spyOn(landedPlane, 'takeOff');
-                airport.orderTakeOff(landedPlane);
-                expect(landedPlane.takeOff).toHaveBeenCalled();
-
-            });
-
-        });
-
-        describe("#orderLanding", function() {
-
-            let airport = new Airport();
-
-            var flyingPlane = {
-
-              takeOff: function() {},
-              isFlying: function() {
-                return true;
-              },
-              land: function(){}
-
-            };
-
-            it("makes a plane land", function() {
-
-                spyOn(flyingPlane, 'land');
-                airport.orderLanding(flyingPlane);
-                expect(flyingPlane.land).toHaveBeenCalled();
-
-            });
-
-        });
-
-
-
-
+    it("rejects to order take off in stormy weather", () => {
+      weather = 'stormy';
+      result = airport.orderTakeOff(landedPlane, weather);
+      expect(result).toBe(false);
     });
+
+    it("order plane to take off in good weather", () => {
+      weather = 'good';
+      spyOn(landedPlane, "takeOff");
+      airport.orderTakeOff(landedPlane, weather);
+      expect(landedPlane.takeOff).toHaveBeenCalled();
+    });
+
+    it("check if a specified plane is in airport or not", () => {
+      weather = 'good';
+      airport.orderLanding(landedPlane, weather);
+      result = airport.hasPlane(landedPlane);
+      expect(result).toBe(true);
+      airport.orderTakeOff(landedPlane, weather);
+      result = airport.hasPlane(landedPlane);
+      expect(result).toBe(false);
+    });
+
+  })
+
+  describe("#orderLanding", () => {
+
+    it("makes a plane land", () => {
+      weather = 'good';
+      spyOn(flyingPlane, 'land');
+      airport.orderLanding(flyingPlane, weather);
+      expect(flyingPlane.land).toHaveBeenCalled();
+    });
+
+    it("add plane to airport's planelist", () => {
+      weather = 'good';
+      airport.orderLanding(flyingPlane, weather);
+      expect(airport.planeList.length).toEqual(1);
+    });
+
+    it("reject to order landing in stormy weather", () => {
+      weather = 'stormy';
+      result = airport.orderLanding(flyingPlane, weather);
+      expect(result).toBe(false);
+    });
+
+    it("reject to order landing when airport is full", () => {
+      weather = 'good';
+      var i;
+      for(i = 0; i < 5; i++){
+        airport.orderLanding(flyingPlane, weather);
+      }
+
+      result = airport.orderLanding(flyingPlane, weather);
+      expect(result).toBe(false);
+    });
+
+  });
+
+
+
+
+});
